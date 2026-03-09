@@ -1,6 +1,7 @@
 use cooklang_import::{ImportResult, LlmProvider, RecipeImporter};
 use log::info;
 use std::env;
+use std::io::{self, Read};
 use std::time::Duration;
 
 fn print_help() {
@@ -28,6 +29,7 @@ OPTIONS:
     --extract-only      Extract recipe without converting to Cooklang format
 
     --text TEXT         Convert plain text recipe to Cooklang
+                        Use '--text -' to read from stdin
 
     --image PATH        Convert recipe image to Cooklang (uses Google Vision OCR)
                         Requires GOOGLE_API_KEY environment variable
@@ -152,7 +154,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else if text_mode {
         // Use Case 4: Text → Cooklang
         let text = if let Some(idx) = args.iter().position(|arg| arg == "--text") {
-            args.get(idx + 1).ok_or("--text requires a value")?.clone()
+            let text_arg = args.get(idx + 1).ok_or("--text requires a value")?.clone();
+            
+            // Check if we should read from stdin
+            if text_arg == "-" {
+                let mut buffer = String::new();
+                io::stdin()
+                    .read_to_string(&mut buffer)
+                    .map_err(|e| format!("Failed to read from stdin: {}", e))?;
+                buffer
+            } else {
+                text_arg
+            }
         } else {
             return Err("--text mode requires a text value".into());
         };
