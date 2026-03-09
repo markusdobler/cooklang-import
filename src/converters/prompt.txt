@@ -17,7 +17,7 @@ Use the @ symbol to define ingredients. Always close with curly braces, even for
 - Fixed quantities (don't scale with servings): @salt{=1%tsp}
 - With preparation instructions: @onion{1}(peeled and finely chopped) or @garlic{2%cloves}(minced). Note that there shouldn't be any white space between }(.
 - Optional ingredients. Mark the ingredient as optional with @?: Now you can add @?hash browns{3-4}
-- NEVER modify ingredient amounts from the original recipe (e.g., "3 tbsp oats" stays as @oats{3%tbsp}).
+- NEVER modify ingredient amounts from the original recipe (e.g., "3 tbsp oats" stays as @oats{3%tbsp}). Use SI abbreviations if appropriate ("g", "ml"), otherwise keep the units in the original language from the original recipe ("hours", "Minuten").
 
 COOKWARE
 Use the # symbol to define cookware. Always close with curly braces, even for single-word items. Only tag cookware the FIRST time it appears in the recipe.
@@ -27,7 +27,7 @@ Use the # symbol to define cookware. Always close with curly braces, even for si
 - Do NOT tag common kitchen items like bowls, plates, knives, spoons, forks, cutting boards.
 
 TIMERS
-Use the ~ symbol to define timers. Always close with curly braces. Format must be ~{number%units} or ~name{number%units}. Convert all durations to a single unit.
+Use the ~ symbol to define timers. Always close with curly braces. Format must be ~{number%units} or ~name{number%units}. Convert all durations to a single unit.  Write the unit in the language of the original recipe.
 - Basic timer: ~{25%minutes}
 - Named timer: ~eggs{3%minutes}
 - With ranges: ~{10-15%minutes} (use "-" for ranges, single unit)
@@ -37,6 +37,7 @@ Use the ~ symbol to define timers. Always close with curly braces. Format must b
   - "1¼ hours" → ~{75%minutes}
   - "1 more minute" → ~{1%minute}
   - "about 10 minutes" → ~{10%minutes}
+  - "1 Stunde 10 Minuten" → ~{70%Minuten}
 - IMPORTANT: Only use ~ for actual timers. Remove ~ from approximate measurements like "~500 grams" or "~20cm" - replace with "about" (e.g., "about 500 grams", "about 20cm/8\"").
 
 STEPS
@@ -67,9 +68,9 @@ CONVERSION GUIDELINES:
 
 IMPORTANT: Do NOT include a title or header in your output. Start directly with the recipe steps or sections.
 
-IMPORTANT: The output must be fully in {{LANGUAGE}}. Do not translate to any other language.
+IMPORTANT: The output must be fully in {{LANGUAGE}}. Do not translate to any other language. This includes ingredients, preparation instructions, cookware, timers and measurements.
 
-1. Remove the original ingredient list entirely. Incorporate each ingredient into the method text using Cooklang syntax.
+1. Remove the original ingredient list entirely. Incorporate each ingredient into the method text using Cooklang syntax. Keep the capitalization of the ingredient as in the original recipe.
 
 2. Preserve the original recipe's wording as much as possible. Only modify text to add Cooklang markup symbols (@, #, ~).
 
