@@ -356,22 +356,53 @@ impl RecipeImporterBuilder {
             .await
             .map_err(|e| ImportError::ConversionError(e.to_string()))?;
 
-        // Build YAML frontmatter from metadata and name
-        let mut output = String::new();
-        let has_name = !components.name.is_empty();
-        let has_metadata = !components.metadata.is_empty();
-
-        if has_name || has_metadata {
-            output.push_str("---\n");
-            if has_name {
-                output.push_str(&format!("title: {}\n", components.name));
+        // Merge metadata: existing metadata takes precedence over extracted metadata
+        use std::collections::HashMap;
+        let mut merged_metadata: HashMap<String, String> = HashMap::new();
+        
+        // First, add extracted metadata from converter (if any)
+        if let Some(extracted) = &conversion_result.extracted_metadata {
+            for (key, value) in extracted {
+                merged_metadata.insert(key.clone(), value.clone());
             }
-            if has_metadata {
-                output.push_str(&components.metadata);
-                if !components.metadata.ends_with('\n') {
-                    output.push('\n');
+        }
+        
+        // Parse existing metadata and override extracted values
+        if !components.metadata.is_empty() {
+            for line in components.metadata.lines() {
+                if let Some((key, value)) = line.split_once(": ") {
+                    merged_metadata.insert(key.to_string(), value.to_string());
                 }
             }
+        }
+        
+        // Override title if components.name is set
+        if !components.name.is_empty() {
+            merged_metadata.insert("title".to_string(), components.name.clone());
+        }
+
+        // Build YAML frontmatter from merged metadata
+        let mut output = String::new();
+        if !merged_metadata.is_empty() {
+            output.push_str("---\n");
+            
+            // Output title first if present
+            if let Some(title) = merged_metadata.get("title") {
+                output.push_str(&format!("title: {}\n", title));
+            }
+            
+            // Output other metadata in sorted order (excluding title)
+            let mut other_keys: Vec<_> = merged_metadata.keys()
+                .filter(|k| *k != "title")
+                .collect();
+            other_keys.sort();
+            
+            for key in other_keys {
+                if let Some(value) = merged_metadata.get(key) {
+                    output.push_str(&format!("{}: {}\n", key, value));
+                }
+            }
+            
             output.push_str("---\n\n");
         }
         output.push_str(&conversion_result.content);

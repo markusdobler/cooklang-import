@@ -12,8 +12,39 @@ pub use ollama::OllamaConverter;
 pub use open_ai::OpenAiConverter;
 pub use prompt::{inject_recipe, COOKLANG_CONVERTER_PROMPT};
 
+/// Parse YAML frontmatter from converter output and extract metadata
+///
+/// Returns (metadata_map, content_without_frontmatter)
+pub fn parse_converter_output(output: &str) -> (HashMap<String, String>, String) {
+    let mut metadata = HashMap::new();
+    let content;
+
+    if let Some(stripped) = output.strip_prefix("---\n") {
+        if let Some(end) = stripped.find("\n---\n") {
+            let frontmatter = &stripped[..end];
+            for line in frontmatter.lines() {
+                if let Some((key, value)) = line.split_once(": ") {
+                    let trimmed_value = value.trim();
+                    // Only add non-empty values
+                    if !trimmed_value.is_empty() {
+                        metadata.insert(key.to_string(), trimmed_value.to_string());
+                    }
+                }
+            }
+            content = stripped[end + 5..].to_string();
+        } else {
+            content = output.to_string();
+        }
+    } else {
+        content = output.to_string();
+    }
+
+    (metadata, content)
+}
+
 use async_trait::async_trait;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::error::Error;
 
 /// Metadata about token usage from LLM conversion
@@ -39,10 +70,12 @@ pub struct ConversionMetadata {
 /// Result of a conversion operation including the converted text and metadata
 #[derive(Debug, Clone)]
 pub struct ConversionResult {
-    /// The converted Cooklang text
+    /// The converted Cooklang text (may include YAML frontmatter)
     pub content: String,
     /// Metadata about the conversion
     pub metadata: ConversionMetadata,
+    /// Extracted recipe metadata (title, prep_time, cook_time, etc.)
+    pub extracted_metadata: Option<HashMap<String, String>>,
 }
 
 /// Unified trait for all converters that transform recipe text to Cooklang format

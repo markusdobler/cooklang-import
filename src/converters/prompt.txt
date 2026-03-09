@@ -64,9 +64,43 @@ COMMENTS
 - Line comments: -- comment text
 - Block comments: [- comment text -]
 
-CONVERSION GUIDELINES:
+METADATA EXTRACTION:
 
-IMPORTANT: Do NOT include a title or header in your output. Start directly with the recipe steps or sections.
+Before converting the recipe, extract the following metadata if present in the recipe text:
+- title: The recipe name/title
+- prep_time: Preparation time (e.g., "15 minutes", "1 hour")
+- cook_time: Cooking time (e.g., "30 minutes", "2 hours")
+- total_time: Total time (e.g., "45 minutes", "3 hours")
+- servings: Number of servings or yield (e.g., "4 servings", "12 cookies", "1 loaf")
+
+IMPORTANT: Only extract metadata that is EXPLICITLY stated in the recipe text. Do NOT invent or guess values.
+
+OUTPUT FORMAT:
+
+Your output must start with YAML frontmatter containing the extracted metadata, followed by the converted Cooklang recipe:
+
+---
+title: [extracted title or leave empty if not found]
+prep_time: [extracted prep time or leave empty if not found]
+cook_time: [extracted cook time or leave empty if not found]
+total_time: [extracted total time or leave empty if not found]
+servings: [extracted servings or leave empty if not found]
+---
+
+[Cooklang recipe content here]
+
+If no metadata is found, output empty frontmatter:
+---
+title: 
+prep_time: 
+cook_time: 
+total_time: 
+servings: 
+---
+
+[Cooklang recipe content here]
+
+CONVERSION GUIDELINES:
 
 IMPORTANT: The output must be fully in {{LANGUAGE}}. Do not translate to any other language. This includes ingredients, preparation instructions, cookware, timers and measurements.
 

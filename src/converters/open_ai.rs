@@ -125,7 +125,7 @@ impl Converter for OpenAiConverter {
             return Err(format!("OpenAI API error: {}", error_msg).into());
         }
 
-        let cooklang_recipe = response_body["choices"][0]["message"]["content"]
+        let raw_output = response_body["choices"][0]["message"]["content"]
             .as_str()
             .ok_or_else(|| {
                 format!(
@@ -136,7 +136,11 @@ impl Converter for OpenAiConverter {
             })?
             .to_string();
 
-        // Extract metadata from response
+        // Parse frontmatter and extract metadata
+        let (extracted_metadata, cooklang_recipe) = 
+            super::parse_converter_output(&raw_output);
+
+        // Extract conversion metadata from response
         let model_version = response_body["model"].as_str().map(|s| s.to_string());
         let input_tokens = response_body["usage"]["prompt_tokens"]
             .as_u64()
@@ -154,6 +158,11 @@ impl Converter for OpenAiConverter {
                     output_tokens,
                 },
                 latency_ms,
+            },
+            extracted_metadata: if extracted_metadata.is_empty() {
+                None
+            } else {
+                Some(extracted_metadata)
             },
         })
     }

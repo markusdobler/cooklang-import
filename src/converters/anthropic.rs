@@ -89,7 +89,7 @@ impl Converter for AnthropicConverter {
             return Err(format!("Anthropic API error ({}): {}", error_type, error_message).into());
         }
 
-        let cooklang_recipe = response_body["content"][0]["text"]
+        let raw_output = response_body["content"][0]["text"]
             .as_str()
             .ok_or_else(|| {
                 format!(
@@ -100,7 +100,11 @@ impl Converter for AnthropicConverter {
             })?
             .to_string();
 
-        // Extract metadata from response
+        // Parse frontmatter and extract metadata
+        let (extracted_metadata, cooklang_recipe) = 
+            super::parse_converter_output(&raw_output);
+
+        // Extract conversion metadata from response
         let model_version = response_body["model"].as_str().map(|s| s.to_string());
         let input_tokens = response_body["usage"]["input_tokens"]
             .as_u64()
@@ -118,6 +122,11 @@ impl Converter for AnthropicConverter {
                     output_tokens,
                 },
                 latency_ms,
+            },
+            extracted_metadata: if extracted_metadata.is_empty() {
+                None
+            } else {
+                Some(extracted_metadata)
             },
         })
     }
