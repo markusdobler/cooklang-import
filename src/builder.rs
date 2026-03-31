@@ -64,6 +64,7 @@ pub struct RecipeImporterBuilder {
     mode: OutputMode,
     provider: Option<LlmProvider>,
     timeout: Option<Duration>,
+    user_agent: Option<String>,
     api_key: Option<String>,
     model: Option<String>,
 }
@@ -265,6 +266,22 @@ impl RecipeImporterBuilder {
     }
 
     /// Set the model name for the LLM provider
+
+    /// Set a custom User-Agent string for HTTP requests
+    ///
+    /// # Example
+    /// ```
+    /// use cooklang_import::RecipeImporter;
+    ///
+    /// let builder = RecipeImporter::builder()
+    ///     .url("https://example.com/recipe")
+    ///     .user_agent("MyApp/1.0");
+    /// ```
+    pub fn user_agent(mut self, user_agent: impl Into<String>) -> Self {
+        self.user_agent = Some(user_agent.into());
+        self
+    }
+
     ///
     /// # Example
     /// ```
@@ -315,7 +332,7 @@ impl RecipeImporterBuilder {
 
         // Route to the appropriate pipeline based on input source
         let components = match source {
-            InputSource::Url(url) => crate::pipelines::url::process(&url)
+            InputSource::Url(url) => crate::pipelines::url::process(&url, self.timeout, self.user_agent.clone())
                 .await
                 .map_err(|e| ImportError::BuilderError(e.to_string()))?,
             InputSource::Text { content, extract } => {

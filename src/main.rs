@@ -37,6 +37,7 @@ OPTIONS:
     --provider NAME     LLM provider to use (openai, anthropic, google, azure_openai, ollama)
                         Requires config.toml with provider configuration
     --timeout SECONDS   Timeout for HTTP requests in seconds (default: no timeout)
+    --user-agent STRING Custom User-Agent string for HTTP requests
 
     --help, -h          Show this help message
 
@@ -124,6 +125,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
+
+    // Parse user-agent option
+    let user_agent = if let Some(idx) = args.iter().position(|arg| arg == "--user-agent") {
+        Some(
+            args.get(idx + 1)
+                .ok_or("--user-agent requires a string")?
+                .clone(),
+        )
+    } else {
+        None
+    };
+
     // Build and execute based on use case
     let result = if image_mode {
         // Use Case 5: Image → Cooklang (OCR then convert)
@@ -191,8 +204,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .ok_or("Please provide a URL as the first argument")?;
 
         info!(
-            "Importing recipe from URL: {}, extract_only: {}, provider: {:?}, timeout: {:?}",
-            url, extract_only, provider, timeout
+            "Importing recipe from URL: {}, extract_only: {}, provider: {:?}, timeout: {:?}, user_agent: {:?}",
+            url, extract_only, provider, timeout, user_agent
         );
 
         let mut builder = RecipeImporter::builder().url(url);
@@ -207,6 +220,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if let Some(t) = timeout {
             builder = builder.timeout(t);
+        }
+
+        if let Some(ua) = user_agent {
+            builder = builder.user_agent(ua);
         }
 
         builder.build().await?

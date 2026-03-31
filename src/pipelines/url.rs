@@ -19,13 +19,19 @@ use std::time::Duration;
 ///
 /// # Arguments
 /// * `url` - The URL to fetch and process
+/// * `timeout` - Optional timeout for HTTP requests
+/// * `user_agent` - Optional custom User-Agent string
 ///
 /// # Returns
 /// * `Ok(RecipeComponents)` - The extracted recipe components
 /// * `Err(...)` - If all extraction methods fail or are not configured
-pub async fn process(url: &str) -> Result<RecipeComponents, Box<dyn Error + Send + Sync>> {
+pub async fn process(
+    url: &str,
+    timeout: Option<Duration>,
+    user_agent: Option<String>,
+) -> Result<RecipeComponents, Box<dyn Error + Send + Sync>> {
     // 1. Fetch HTML
-    let fetcher = RequestFetcher::new(Some(Duration::from_secs(30)));
+    let fetcher = RequestFetcher::new(timeout, user_agent);
     let fetch_result = fetcher.fetch(url).await;
 
     // 2. If HTML fetch succeeded, try structured extractors first

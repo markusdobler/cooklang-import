@@ -7,11 +7,14 @@ pub struct RequestFetcher {
 }
 
 impl RequestFetcher {
-    pub fn new(timeout: Option<Duration>) -> Self {
+    pub fn new(timeout: Option<Duration>, user_agent: Option<String>) -> Self {
         let timeout = timeout.unwrap_or(Duration::from_secs(30));
+        let user_agent = user_agent.unwrap_or_else(|| {
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0".to_string()
+        });
         let client = Client::builder()
             .timeout(timeout)
-            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .user_agent(user_agent)
             .build()
             .expect("Failed to create HTTP client");
 

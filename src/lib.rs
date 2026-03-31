@@ -49,7 +49,7 @@ pub use builder::{ImportResult, LlmProvider, RecipeImporter, RecipeImporterBuild
 /// }
 /// ```
 pub async fn url_to_recipe(url: &str) -> Result<RecipeComponents, ImportError> {
-    pipelines::url::process(url)
+    pipelines::url::process(url, None, None)
         .await
         .map_err(|e| ImportError::ExtractionError(e.to_string()))
 }
